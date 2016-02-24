@@ -201,7 +201,7 @@ def ngram_tree_to_html(root):
         root: root Ngram node
         
     Returns:
-        String with Org-mode representation of Ngram object and its children.
+        String with html ul representation of Ngram object and its children.
     """
     text_string =  '' 
     if len(root.get_children())>0:
