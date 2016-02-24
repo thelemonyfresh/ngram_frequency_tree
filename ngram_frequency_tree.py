@@ -2,73 +2,20 @@ import nltk
 from nltk.probability import FreqDist
 from nltk.util import ngrams
 from numpy import *
-nltk.data.path.append('/opt/python/current/app/nltk_data')
-
-
-### NGRAM DISTRIBUTION CREATION
-
-def ngram_freq(textstring, max_n=10):
-    """ Construct an ngram frequency distribution from a string.
-
-    textstring: string to extract ngrams from
-    max_n: the longest ngram length counted
-
-    """
-
-    tokenlist = nltk.Text(nltk.word_tokenize(textstring))
-    
-    ngram_freqdist = FreqDist()
-    for n in arange(1,max_n):
-        for gram in ngrams(tokenlist,n):
-            ngram_freqdist[gram] += 1
-  
-    return ngram_freqdist
-
-def ngram_filter(input_freqdist,stopwords=[]):
-    """ Filter frequency distribution of ngrams to remove:
-    1. ngrams consisting of only stopwords (given in "stopwords" list; exclude standard english using nltk.corpus.stopwords.words('english')
-    2. ngrams that occur only in higher ngrams (if freq('the')==freq('and the'), e.g.)
-    3. ngrams with freq=1
-
-    Returns frequency distribution.
-
-    ngram_freqdist: frequency distribution of ngrams
-    additional_stopwords: stopwords to be removed.
-
-    """
-    ngram_freqdist = input_freqdist.copy()
-    
-    # remove ngrams of only stop words
-    for tuple in ngram_freqdist.most_common():
-        isin = []
-        for word in tuple[0]: 
-            isin.append(word in stopwords)
-        if all(isin): ngram_freqdist.pop(tuple[0])
-
-    # remove ngrams which are only duplicate parts of higher ngrams
-    for tuple in ngram_freqdist.most_common():
-        for j in arange(1,len(tuple[0])):
-            for gram in ngrams(tuple[0],j):
-                if ngram_freqdist[gram] == ngram_freqdist[tuple[0]] > 0:
-                    ngram_freqdist.pop(gram)
-                    
-    # remove ngrams occurring only once in a text
-        if ngram_freqdist.has_key(tuple[0]) and tuple[1]<2: ngram_freqdist.pop(tuple[0])
-
-    return ngram_freqdist
-
-### NGRAM TREE
 
 def ngram_tree(input_text, n_max=10, stopwords=[]):
-    """Create an ngram frequency tree from a freqdist of ngrams. Returns list of ngram tree roots.
+    """Create an ngram frequency tree from a string of text.
 
-    input_text: text used to build ngram frequency tree
-    n_max: the maximum depth of the tree, or the maximum ngram length to be included in the tree
-    stopwords: list of words to be excluded from ngram frequency counting (exclude standard english using nltk.corpus.stopwords.words('english')
+    Args:
+        input_text (string): text used to build ngram frequency tree
+        n_max (int): the maximum depth of the tree, or the maximum ngram length to be included in the tree
+        stopwords (list of strings): list of words to be excluded from ngram frequency counting (exclude standard english using nltk.corpus.stopwords.words('english')
+        
+    Returns:
+        List of Ngram "root" objects with no parents (typically 1-grams) which are cannot be reduced to an (n-1)gram that occurs in the text. List is ordered by occurrence frequency of root in input string.
      """
 
     freqdist = ngram_filter(ngram_freq(input_text,n_max),stopwords)
-
 
     ngram_root_list = []
     for n in arange(1,n_max+1):
@@ -87,16 +34,14 @@ def ngram_tree(input_text, n_max=10, stopwords=[]):
 class Ngram():
     """ Class containing nodes of ngram tree.
 
-    Variables:
-    
-    self.ngram_tuple: tuple representation of ngram
-    self.frequency: frequency associated with ngram
-    self.is_in: list of children Ngrams
+    Args:
+        ngram_tuple: tuple representation of ngram
+        frequency: occurrence frequency associated with ngram
+        is_in: list of children Ngrams
 
-    Accessible methods:
-    
-    add_child(ngram_object): add ngram_object to list of children, recursively if ngram_object belongs as a subchild to one of this ngrams list of children
-    get_children(): return list of children
+    Methods:
+        add_child(ngram_object): add Ngram object to list of children, recursively if Ngram object belongs as a subchild to one of this Ngram's list of children
+        get_children(): return list of children Ngram objects
 
     """
     def __init__(self,tokens,freq):
@@ -128,13 +73,76 @@ class Ngram():
     def get_children(self):
         return self.is_in
 
+### NGRAM COUNTING AND DISTRIBUTION CREATION
+
+def ngram_freq(textstring, max_n=10):
+    """ Construct an ngram frequency distribution from a string for 0 < n < max_n.
+
+    Args:
+        textstring: string to extract ngrams from
+        max_n: the longest ngram length counted
+
+    Returns:
+        FreqDist obeject with tuple representation of ngrams as keys and the frequency with which each ngram occurs in textstring
+    """
+
+    tokenlist = nltk.Text(nltk.word_tokenize(textstring))
+    
+    ngram_freqdist = FreqDist()
+    for n in arange(1,max_n):
+        for gram in ngrams(tokenlist,n):
+            ngram_freqdist[gram] += 1
+  
+    return ngram_freqdist
+
+def ngram_filter(input_freqdist,stopwords=[]):
+    """ Filter frequency distribution of ngrams.
+    
+    Removes:
+    1. ngrams consisting of only stopwords (given in "stopwords" list; exclude standard english using nltk.corpus.stopwords.words('english')
+    2. ngrams that occur only in higher ngrams (if freq('the')==freq('and the'), e.g.)
+    3. ngrams with freq=1
+
+    Args:
+        ngram_freqdist: frequency distribution of ngrams
+        additional_stopwords: stopwords to be removed.
+
+    Returns:
+        Filtered FreqDist with tuple representations of ngrams as keys.
+
+    """
+    ngram_freqdist = input_freqdist.copy()
+    
+    # remove ngrams of only stop words
+    for tuple in ngram_freqdist.most_common():
+        isin = []
+        for word in tuple[0]: 
+            isin.append(word in stopwords)
+        if all(isin): ngram_freqdist.pop(tuple[0])
+
+    # remove ngrams which are only duplicate parts of higher ngrams
+    for tuple in ngram_freqdist.most_common():
+        for j in arange(1,len(tuple[0])):
+            for gram in ngrams(tuple[0],j):
+                if ngram_freqdist[gram] == ngram_freqdist[tuple[0]] > 0:
+                    ngram_freqdist.pop(gram)
+                    
+    # remove ngrams occurring only once in a text
+        if ngram_freqdist.has_key(tuple[0]) and tuple[1]<2: ngram_freqdist.pop(tuple[0])
+
+    return ngram_freqdist
+
 ### NRGAM, FREQDIST OPERATORS
 
 def sel_freq_n(freqdist,n=1):
     """ Return frequency distribution with only ngrams of length n.
 
-    freqdist: a frequency distribution of ngram tuples
-    n: desired length of ngram tuples
+    Args:
+        freqdist: a frequency distribution of ngram tuples
+        n: desired length of ngram tuples
+        
+    Returns:
+        FreqDist object with tuple representation of ngrams as keys.
     """
     freq_n = FreqDist()
     for gram in freqdist.most_common():
@@ -143,10 +151,18 @@ def sel_freq_n(freqdist,n=1):
     return freq_n
 
 def contains_subgram(ngram,mgram):
-    """ Determine if mgram is contained within ngram.
+    """ Determine if mgram is contained within ngram (Ngram objects).
 
-    ngram: ngram possibly containing mgram
-    mgram: possibly contained within ngram
+    Example (using tuple representation):
+        "the brown dog" contains "brown dog"
+
+        If "ngram" is an Ngram object for the phrase "the brown dog" and "mgram" is an Ngram object for the phrase "brown dog":
+        contains_subgram(ngram,mgram) -> True
+        contains_subgram(mgram,ngram) -> False
+
+    Args:
+        ngram: ngram possibly containing mgram
+        mgram: possibly contained within ngram
     """
     is_in = False
     if len(ngram.ngram_tuple) > len(mgram.ngram_tuple):
@@ -159,9 +175,16 @@ def contains_subgram(ngram,mgram):
 ### OUTPUT
 
 def ngram_tree_to_emacs(root,level='* '):
-    """ Produce a string for output to emacs org mode of an ngram tree (single root). Returns string org-hierarchy representation of this node and all its children. Of the form: "* rootnode1 /n ** childnode1 /n **childnode2 /n etc..."
+    """ Produce a string for output to emacs Org mode of an ngram tree (single root). 
+    
+    Produce string org-hierarchy representation of this node and all its children. Of the form: "* rootnode1 /n ** childnode1 /n **childnode2 /n etc..."
 
-    root: root Ngram node
+    Args:
+        root: root Ngram node to be represented.
+        level: emacs Org-mode starting level
+        
+    Returns:
+        String with Org-mode representation of Ngram object and its children.
     """
 
     text_string =  level + "[" + str(root.frequency) + "]" + str(root) + '\n'
@@ -174,7 +197,11 @@ def ngram_tree_to_emacs(root,level='* '):
 def ngram_tree_to_html(root):
     """ Produce a string for output to an html ul of an ngram tree (single root).
     
-    root: root Ngram node
+    Args:
+        root: root Ngram node
+        
+    Returns:
+        String with Org-mode representation of Ngram object and its children.
     """
     text_string =  '' 
     if len(root.get_children())>0:
