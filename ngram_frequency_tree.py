@@ -175,16 +175,16 @@ def contains_subgram(ngram,mgram):
 ### OUTPUT
 
 def ngram_tree_to_emacs(root,level='* '):
-    """ Produce a string for output to emacs Org mode of an ngram tree (single root). 
+    """ Produce a string for output to Emacs Outline mode of an ngram tree (single root). 
     
-    Produce string org-hierarchy representation of this node and all its children. Of the form: "* rootnode1 /n ** childnode1 /n **childnode2 /n etc..."
+    Produce string Outline-hierarchy representation of this node and all its children. Of the form: "* rootnode1 /n ** childnode1 /n **childnode2 /n etc..."
 
     Args:
         root: root Ngram node to be represented.
-        level: emacs Org-mode starting level
+        level: emacs Outline-mode starting level
         
     Returns:
-        String with Org-mode representation of Ngram object and its children.
+        String with Outline-mode representation of Ngram object and its children.
     """
 
     text_string =  level + "[" + str(root.frequency) + "]" + str(root) + '\n'
