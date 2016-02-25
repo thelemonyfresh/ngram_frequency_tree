@@ -1,7 +1,7 @@
 # ngram_frequency_tree
 
 
-An Ngram Frequency Tree is an ordered representation of ngram occurrence frequency in a text, where ngrams are children of (n-1)grams in which they occur in that text.
+An Ngram Frequency Tree is an ordered representation of ngram occurrence frequency in a text, where ngrams are children of (n-1)grams in which they occur in that text. This module requires NLTK.
 
 
 Take the example sentence: "The quick brown fox jumps over the lazy dog and the lazy cat." There are many possible ngrams in this sentence, but an exhaustive list is not very useful. Consider only those that occur more than once, namely:
@@ -23,9 +23,15 @@ The main method is `ngram_tree(string)` which, without additional arguments, cou
 
 `Ngram` objects have the following properties:
 
-- `str(object)` returns a string representation of the ngram
-- `object.frequency` stores the occrrence frequency of the ngram
-- `object.get_children()` returns a frequency-sorted list of children, also `Ngram` objects
+- `str(Ngram)` returns a string representation of the ngram
+- `Ngram.frequency` stores the occrrence frequency of the ngram
+- `Ngram.get_children()` returns a frequency-sorted list of children, also `Ngram` objects
+
+
+The NLTK tokenizer used automatically keeps all punctuation, so punctuation is counted as part of the ngrams. To remove common English words and punctuation, use the `stopwords` argument:
+```
+ngram_tree(text_string, stopwords=nltk.corpus.stopwords.words('english')+['.',',','!','?','(',')',':',';'])
+```
 
 
 ### Output
