@@ -15,7 +15,7 @@ Which can be arranged simply into a frequency tree with one parent node ("the", 
 
 Ngram Frequency Trees are frequency-sorted lists of root ngram nodes (often a list of 1-grams), each associated with a frequency-sorted list of higher-order children each itself a node.
 
-See blog post [Ngram Frequency Trees]() for more info.
+See blog post [Ngram Frequency Trees](http://danielporter.ca/blog/?p=256) for more info.
 
 ## How to use
 
