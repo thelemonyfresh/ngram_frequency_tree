@@ -15,8 +15,6 @@ Which can be arranged simply into a frequency tree with one parent node ("the", 
 
 Ngram Frequency Trees are frequency-sorted lists of root ngram nodes (often a list of 1-grams), each associated with a frequency-sorted list of higher-order children each itself a node.
 
-See blog post [Ngram Frequency Trees](http://danielporter.ca/blog/?p=256) for more info.
-
 ## How to use
 
 The main method is `ngram_tree(string)` which, without additional arguments, counts all ngrams with n<10 and builds a tree as described above. It returns a frequency sorted list of root `Ngram` objects. It also accepts optional arguments `ngram_tree(string, n_max, stopwords_list)` where n_max is the longest ngram it will consider and stopwords_list is a list of words to be excluded from counting.
